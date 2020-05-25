@@ -1,13 +1,15 @@
+# uses https://github.com/jetstack/cert-manager
+# automatically creates certificates using Let's Encrypt
 apiVersion: cert-manager.io/v1alpha2
 kind: ClusterIssuer
 metadata:
     name: letsencrypt-prod
 spec:
     acme:
-        server: https://acme-v02.api.letsencrypt.org/directory
-        email: 'kiril.raichev@gmail.com'
+        server: https://acme-v02.api.letsencrypt.org/directory # Let's Encrypt server
+        email: 'kiril.raichev@gmail.com' # They require real emails
         privateKeySecretRef:
-            name: letsencrypt-prod
+            name: letsencrypt-prod # The certificate information would be stored here
         solvers:
             - http01:
                 ingress:

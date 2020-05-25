@@ -26,8 +26,12 @@ spec:
                       mountPath: /var/lib/postgresql/database
                       subPath: postgres
                   env:
+                    # setting this variable actually sets the database password
                     - name: POSTGRES_PASSWORD
                       valueFrom:
+                        # the secret is defined imperatively, by executing
+                        # kubectl create secret generic pgpassword --from-literal PGPASSWORD=someRandomPassword
+                        # the same secret is used in server-deployment.yaml
                         secretKeyRef:
                             name: pgpassword
                             key: PGPASSWORD

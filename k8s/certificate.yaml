@@ -1,12 +1,15 @@
+# uses https://github.com/jetstack/cert-manager
+# automatically creates certificates using Let's Encrypt
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
     name: multi-k8s-xyz-tls
 spec:
-    secretName: multi-k8s-xyz
+    secretName: multi-k8s-xyz # defined in issuer.yaml
     issuerRef:
-        name: letsencrypt-prod
+        name: letsencrypt-prod # defined in issuer.yaml
         kind: ClusterIssuer
+    # Everything below is the required format for the certificate
     commonName: multi-k8s.xyz
     dnsNames:
         - multi-k8s.xyz

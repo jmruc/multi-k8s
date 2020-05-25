@@ -19,9 +19,9 @@ spec:
                     - containerPort: 5000
                   env:
                     - name: REDIS_HOST
-                      value: redis-cluster-ip-service
+                      value: redis-cluster-ip-service # defined in redis-cluster-ip-service.yaml
                     - name: REDIS_PORT
-                      value: '6379'
+                      value: '6379' # default port
                     - name: PGUSER
                       value: postgres
                     - name: PGHOST
@@ -32,6 +32,9 @@ spec:
                       value: postgres
                     - name: PGPASSWORD
                       valueFrom:
+                        # the secret is defined imperatively, by executing
+                        # kubectl create secret generic pgpassword --from-literal PGPASSWORD=someRandomPassword
+                        # the same secret is used in postgres-deployment.yaml
                         secretKeyRef:
                             name: pgpassword
                             key: PGPASSWORD

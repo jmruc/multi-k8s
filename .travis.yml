@@ -1,27 +1,30 @@
-sudo: required
+sudo: required # we need to run docker with sudo
 services:
-    - docker
+    - docker # make docker available in travis
 env:
     global:
-        - SHA=$(git rev-parse HEAD)
-        - CLOUDSDK_CORE_DISABLE_PROMPTS=1
+        - SHA=$(git rev-parse HEAD) # we'll use this for tagging docker images
+        - CLOUDSDK_CORE_DISABLE_PROMPTS=1 # disable prompts in Google Cloud
 before_install:
+    # service-account is encrypted by following https://docs.travis-ci.com/user/encrypting-files/
+    # use this to decrypt in travis
     - openssl aes-256-cbc -K $encrypted_9f3b5599b056_key -iv $encrypted_9f3b5599b056_iv -in service-account.json.enc -out service-account.json -d
-    - curl https://sdk.cloud.google.com | bash > /dev/null;
-    - source $HOME/google-cloud-sdk/path.bash.inc
-    - gcloud components update kubectl
-    - gcloud auth activate-service-account --key-file service-account.json
-    - gcloud config set project multi-k8s-278213
-    - gcloud config set compute/zone europe-west3-a
-    - gcloud container clusters get-credentials multi-cluster
+    - curl https://sdk.cloud.google.com | bash > /dev/null; # install google cloud sdk
+    - source $HOME/google-cloud-sdk/path.bash.inc # install google cloude sdk part 2
+    - gcloud components update kubectl # make kubectl avaiable
+    - gcloud auth activate-service-account --key-file service-account.json # authenticate with google cloud
+    - gcloud config set project multi-k8s-278213 
+    - gcloud config set compute/zone europe-west3-a # the zone of the k8s cluster (not the project)
+    - gcloud container clusters get-credentials multi-cluster # enable working with the "multi-cluster" k8s cluster 
+    # enable pushing to hub.docker.com, env variables are defined in travis ci's web interface for the project
     - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-    - docker build -t kirilraychev/react-test -f ./client/Dockerfile.dev ./client
+    - docker build -t kirilraychev/react-test -f ./client/Dockerfile.dev ./client # build a container to run tests
 
 script:
-    - docker run -e CI=true kirilraychev/react-test npm run test
+    - docker run -e CI=true kirilraychev/react-test npm run test # run tests, image name is just for the build, it's not pushed
 
 deploy:
     provider: script
     script: bash ./deploy.sh
     on:
-        branch: master
+        branch: master # only run on master, not for branches and PRs

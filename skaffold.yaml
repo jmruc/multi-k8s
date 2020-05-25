@@ -1,0 +1,36 @@
+apiVersion: skaffold/v1beta2 # see https://skaffold.dev/docs/
+kind: Config
+build:
+    local: 
+        push: false
+    artifacts:
+        - image: kirilraychev/multi-client
+          context: client # directory
+          docker:
+            dockerfile: Dockerfile.dev
+          sync: # files to sync, as soon as they are edited locally
+            '**/*.js': .
+            '**/*.css': .
+            '**/*.html': .
+        - image: kirilraychev/multi-server
+          context: server
+          docker:
+            dockerfile: Dockerfile.dev
+          sync:
+            '**/*.js': .
+        - image: kirilraychev/multi-worker
+          context: worker
+          docker:
+            dockerfile: Dockerfile.dev
+          sync:
+            '**/*.js': .
+deploy:
+    kubectl:
+        manifests:
+            # will build and deploy these when there are changes
+            # THEY WILL BE DELETED FROM K8S ON STOPPING SKAFFOLD
+            - k8s/client-deployment.yaml
+            - k8s/server-deployment.yaml
+            - k8s/worker-deployment.yaml
+            - k8s/client-cluster-ip-service.yaml
+            - k8s/server-cluster-ip-service.yaml

@@ -1,27 +1,30 @@
+ # uses https://github.com/kubernetes/ingress-nginx
+ # see https://kubernetes.github.io/ingress-nginx/deploy/#using-helm for installation on cloud
+ # "minikube addons enable ingress" for minikube
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
     name: ingress-service
     annotations:
         kubernetes.io/ingress.class: nginx
-        nginx.ingress.kubernetes.io/rewrite-target: /$1
-        cert-manager.io/cluster-issuer: "letsencrypt-prod"
-        nginx.ingress.kubernetes.io/ssl-redirect: "true"
+        nginx.ingress.kubernetes.io/rewrite-target: /$1 # we rewrite using the first regex group as replacement
+        cert-manager.io/cluster-issuer: "letsencrypt-prod" # defined in issuer.yaml
+        nginx.ingress.kubernetes.io/ssl-redirect: "true" # force use of ssl
 spec:
     tls:
-      - hosts:
+      - hosts: # define hosts that have certificate
           - multi-k8s.xyz
           - www.multi-k8s.xyz
-        secretName: multi-k8s-xyz
+        secretName: multi-k8s-xyz # the secret with the tls info, defined in certificate.yaml and issuer.yaml
     rules:
-        - host: multi-k8s.xyz
+        - host: multi-k8s.xyz # we need the same config for each host we respond to
           http:
             paths:
                 - path: /?(.*)
                   backend:
-                    serviceName: client-cluster-ip-service
+                    serviceName: client-cluster-ip-service # defined in client-cluster-ip-service.yaml
                     servicePort: 3000
-                - path: /api/?(.*)
+                - path: /api/?(.*) # would be rewriten by "nginx.ingress.kubernetes.io/rewrite-target" to remove "/api"
                   backend:
                     serviceName: server-cluster-ip-service
                     servicePort: 5000
